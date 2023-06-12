@@ -46,7 +46,7 @@ socket.on("mensajes", arrayMensajes => {
 
 
 
-/*const socket = io()
+//const socket = io()
 
 socket.emit("mensaje", "Hola buenos dias")
 
@@ -57,4 +57,4 @@ socket.on("confirmacionAcceso", info =>{
 
 socket.on("mensaje-socket-propio", mensaje =>{
     console.log(mensaje)
-})*/
+})

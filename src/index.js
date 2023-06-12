@@ -14,7 +14,13 @@ import { userModel } from './models/Users.js'
 import { cartModel } from './models/Cart.js'
 import { productModel } from './models/Products.js'
 import { messageModel } from './models/Messages.js'
-
+import cookieParser from 'cookie-parser'
+import session from 'express-session'
+import  FileStore  from 'session-file-store'
+import MongoStore from 'connect-mongo'
+import './utils/bcrypt.js'
+import passport from 'passport'
+import routerSession from './routes/session.routes.js'
 
 
 
@@ -28,6 +34,7 @@ const storage = multer.diskStorage({
         cb(null, `${file.originalname}`)
     }
 }) 
+
 
 mongoose.connect(process.env.URL_MONGODB_ATLAS)
 //mongoose.connect("mongodb+srv://bandialejandro:Bocha101@cluster0.b47bksn.mongodb.net/?retryWrites=true&w=majority")
@@ -51,6 +58,13 @@ app.set('views', path.resolve(__dirname, './views'))
 app.use(express.json())
 app.use(express.urlencoded({extended:true}))
 const upload = (multer({storage:storage}))
+app.use(cookieParser(process.env.COOKIE_SECRET))
+
+/*app.use(session({
+    secret: process.env.SESSION_SECRET,
+    resave : true,
+    saveUninitialized : true
+}))*/
 
 
 
@@ -241,3 +255,62 @@ app.get('/', (req, res) => {
 ])
 
 console.log(resultado)*/
+
+
+//cookies
+app.get('/setCookie', (req, res) =>{
+    res.cookie('CookieCookie', "Id: 545",{maxAge:3600000, signed: true}).send("Cookie firmada")
+    //res.send("Cookie creada")
+})
+
+app.get('/getCookie', (req, res) =>{
+    res.send(req.signedCookies)
+})
+
+app.get('/deleteCookie', (req, res) =>{
+    res.clearCookie('CookieCookie').send("Cookie eliminada")
+    })
+
+//session
+
+const fileStorage = FileStore(session);
+/*app.use(session({
+    //app.use(cookieParser())
+    store : new fileStorage ({ path:'./sessions', ttl : 100, retries: 0}),
+    secret : 'abc123456',
+    resave: false,
+    saveUninitialized: false
+}))*/
+
+app.use(session({
+    //app.use(cookieParser())
+    store : MongoStore.create({
+        //mongoUrl:'mongodb+srv://bandialejandro:Bocha101@cluster0.b47bksn.mongodb.net/?retryWrites=true&w=majority',
+        mongoUrl: process.env.URL_MONGODB_ATLAS,
+        mongoOptions: {useNewUrlParser: true, useUnifiedTopology: true},
+        ttl: 210,
+        //collectionName: 'sessions',
+    }),
+    //secret : 'secret',
+    secret: process.env.SESSION_SECRET,
+    //resave: false,
+    resave: true,
+    //saveUninitialized: false,
+    saveUninitialized: true,
+
+    //cookie: {maxAge: 60000}
+}))
+
+app.use('/session', routerSession)
+
+app.get('/session', (req, res) =>{
+    if(req.session.counter){
+        req.session.counter++
+        res.send(`Ingresaste ${req.session.counter} veces`)
+}else{
+    req.session.counter = 1
+    res.send(`Hola esta es la primera vez que ingreso`)
+} })
+
+
+ 

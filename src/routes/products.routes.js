@@ -14,7 +14,7 @@ productRouter.get("/", async (req,res) => {
             limit: 8,
             sort: {price: -1}
         }
-        const products = await productModel.paginate({category: "fiambre"}, options)
+        const products = await productModel.paginate({category: "queso"}, options)
         res.send(products)
         
     }catch{
